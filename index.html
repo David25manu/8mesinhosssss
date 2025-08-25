@@ -618,6 +618,7 @@
             <span id="memory-close-btn">&times;</span>
             <h2>Jogo da Memória</h2>
             <p id="memory-timer">Tempo: 60s</p>
+            <p id="memory-counter">Jogos hoje: 0/5</p>
             <div id="memory-grid"></div>
             <p id="memory-message"></p>
         </div>
@@ -746,7 +747,7 @@
                 <button class="option" data-answer="A">Esta danada</button>
                 <button class="option" data-answer="B">Mi Bello Angel</button>
                 <button class="option" data-answer="C">Lisboa</button>
-                <button class="option" data-answer="D">Portugal</button>
+                <button class="option" data-answer="D">D) Portugal</button>
             </div>
             <div id="q7-message" class="message-box hidden"></div>
         </div>
@@ -828,11 +829,16 @@
         const buySpinBtn = document.getElementById('buySpinBtn');
         const rouletteWheel = document.getElementById('roulette-wheel');
         const spinResult = document.getElementById('spin-result');
+        const memoryCounterDisplay = document.getElementById('memory-counter');
 
         let bejaos = parseInt(localStorage.getItem('bejaos')) || 0;
         let lastFreeSpinDate = localStorage.getItem('lastFreeSpinDate') || '';
         let spinsBoughtToday = parseInt(localStorage.getItem('spinsBoughtToday')) || 0;
         let lastSpinBuyDate = localStorage.getItem('lastSpinBuyDate') || '';
+        let memoryPlaysToday = parseInt(localStorage.getItem('memoryPlaysToday')) || 0;
+        let lastMemoryPlayDate = localStorage.getItem('lastMemoryPlayDate') || '';
+        let quizCompleted = JSON.parse(localStorage.getItem('quizCompleted')) || false;
+        let lastQuizCompletionDate = localStorage.getItem('lastQuizCompletionDate') || '';
         
         let heartsInterval;
         let flippedCards = [];
@@ -973,6 +979,10 @@
         // Lógica do Jogo da Memória
         const emojis = ['🍎', '🍌', '🍒', '🍇', '🍋', '🍉', '🍓', '🍍'];
         const allEmojis = [...emojis, ...emojis];
+
+        const updateMemoryCounter = () => {
+            memoryCounterDisplay.textContent = `Jogos hoje: ${memoryPlaysToday}/5`;
+        };
         
         function shuffle(array) {
             for (let i = array.length - 1; i > 0; i--) {
@@ -1058,6 +1068,9 @@
             clearInterval(timerInterval);
             bejaos += 50;
             updateBejaosDisplay();
+            memoryPlaysToday++;
+            localStorage.setItem('memoryPlaysToday', memoryPlaysToday);
+            updateMemoryCounter();
             memoryMessage.textContent = 'Parabéns! Você ganhou 50 beijaos!';
             memoryMessage.style.color = 'green';
             startConfetti(memoryGrid);
@@ -1178,8 +1191,18 @@
                 localStorage.setItem('spinsBoughtToday', spinsBoughtToday);
                 localStorage.setItem('lastSpinBuyDate', today);
             }
+            if (lastMemoryPlayDate !== today) {
+                memoryPlaysToday = 0;
+                localStorage.setItem('memoryPlaysToday', memoryPlaysToday);
+                localStorage.setItem('lastMemoryPlayDate', today);
+            }
+            if (lastQuizCompletionDate !== today) {
+                quizCompleted = false;
+                localStorage.setItem('quizCompleted', JSON.stringify(quizCompleted));
+            }
 
             updateBejaosDisplay();
+            updateMemoryCounter();
             startFallingHearts();
             showLevel('password');
             createRouletteWheel();
@@ -1208,6 +1231,11 @@
             checkRouletteButtons();
         });
         memoryBtn.addEventListener('click', () => {
+             if (memoryPlaysToday >= 5) {
+                memoryMessage.textContent = 'Você já atingiu o limite de 5 jogos hoje. Tente novamente amanhã!';
+                memoryMessage.style.color = 'red';
+                return;
+            }
             memoryModal.classList.remove('hidden');
             memoryMessage.textContent = '';
             matchedPairs = 0;
@@ -1309,6 +1337,9 @@
                     resetLevel(nextLevelId);
                     showLevel(nextLevelId);
                     if (nextLevelId === 'final') {
+                        quizCompleted = true;
+                        localStorage.setItem('quizCompleted', JSON.stringify(quizCompleted));
+                        localStorage.setItem('lastQuizCompletionDate', new Date().toDateString());
                         document.getElementById('final-title').textContent = "MINHA RAINHA PASSOU!!!!!!";
                         document.getElementById('final-text').textContent = "Você passou por todos os níveis e provou o quanto me ama demais hehehehehe FELIZ 8 MESES PARA NOSSSSSSSS MINHA DEUSA GREGAAAAAAAAAAA EU TE AMO MIL MILHOESSSSSSSSSSSSSSSS";
                     }
@@ -1351,9 +1382,9 @@
         const handleCorrectAnswer = (levelId, messageBox, sourceElement) => {
             messageBox.className = 'message-box success-message';
             const messages = {
-                'q1': `<span class="emoji">🎉</span><h2>PARABENS MINHA RAINHAAAA HEHEHEHEHE</h2><p>voxe passou e ganhou 10 BEJAOSSSSSS pode pedir quando quiser :))))</p>`,
-                'q2': `<span class="emoji">🎉</span><h2>EBAAAAAAAAAA</h2><p>GANHOU MAIS 10 BEJAOS DO SEU NENECO HEHEHEHEHE PODE USAR QUANDO QUISER MINHA DEUSA GREGA EU TE AMOOOOOOOOO DEMAISSSSSS</p>`,
-                'q3': `<span class="emoji">🎉</span><h2>PARABENS MINHA PRINCESINHAAAAAAAAAAA EHEHHEHEHEHE</h2><p>MAIS UMA QUE ACERTOU HIHIHIIH AMO :) felizzzzz E GANHOU MAIS 10 BEJAOS DE VOUCHER QUE PODE USAR QUANDO QUISERRRRRRRRRR</p>`,
+                'q1': `<span class="emoji">🎉</span><h2>PARABENS MINHA RAINHAAAAAAAA</h2><p>você passou e ganhou ${quizCompleted ? '2' : '10'} BEJAOSSSSSS pode pedir quando quiser :))))</p>`,
+                'q2': `<span class="emoji">🎉</span><h2>EBAAAAAAAAAA</h2><p>GANHOU MAIS ${quizCompleted ? '2' : '10'} BEJAOS DO SEU NENECO HEHEHEHEHE PODE USAR QUANDO QUISER MINHA DEUSA GREGA EU TE AMOOOOOOOOO DEMAISSSSSS</p>`,
+                'q3': `<span class="emoji">🎉</span><h2>PARABENS MINHA PRINCESINHAAAAAAAAAAA EHEHHEHEHEHE</h2><p>MAIS UMA QUE ACERTOU HIHIHIIH AMO :) felizzzzz E GANHOU MAIS ${quizCompleted ? '2' : '10'} BEJAOS DE VOUCHER QUE PODE USAR QUANDO QUISERRRRRRRRRR</p>`,
                 'q4': `<span class="emoji">🎉</span><h2>HEHEHEHE</h2><p>MINHA PRINCESINHA ME CONHECE TAO BEM HIHIHI EU AMO VOXEEEEEEEE</p>`,
                 'q5': `<span class="emoji">🎉</span><h2>EBAAAAAAAAAA</h2><p>ACERTOUUUUUUUUUUUU HEHEHEHEHEHHEHEHEH</p>`,
                 'q6': `<span class="emoji">🎉</span><h2>EU AMO VOXE</h2><p>foi voxe xim 🙄🙄🙄mas nao quer dizer que voxe ama mais naum xiu :( NOS AMA IGUAL HEHE</p>`,
@@ -1368,9 +1399,9 @@
                 option.disabled = true;
             });
 
-            // Add 10 beijaos for correct answers
+            // Add points based on if quiz is completed
             if (levelId !== 'q8') {
-                 bejaos += 10;
+                 bejaos += quizCompleted ? 2 : 10;
             }
             updateBejaosDisplay();
 
@@ -1411,20 +1442,29 @@
             const nextButton = document.getElementById(`${levelId}-next`);
             nextButton.classList.add('hidden');
             messageBox.className = 'message-box secret-message';
-            messageBox.innerHTML = `<span class="emoji">🙌</span><h2>OH NÃO ACHOU A RESPOSTA SECRETA</h2><p>ACABOU DE GANHAR 100 BEJAOS DE VOUCHER PARA SEU NENECO MAS PRECISA FAZER SEU NENECO RIR EM 1 MINUTO. O cronômetro começa em 10 segundos!</p>`;
             
-            const options = document.querySelectorAll(`#${levelId}-level .option`);
-            options.forEach(option => {
-                option.disabled = true;
-            });
-            const navButtons = document.querySelectorAll(`#${levelId}-level .nav-button`);
-            navButtons.forEach(button => {
-                button.disabled = true;
-            });
+            const secretBejaos = quizCompleted ? 2 : 100;
+            if (quizCompleted) {
+                messageBox.innerHTML = `<span class="emoji">🙌</span><h2>OH NÃO! A RESPOSTA SECRETA AGORA VALE APENAS 2 BEIJAOS</h2><p>Você já completou o quiz, então a recompensa é menor. Você ganhou 2 Beijaos!</p>`;
+                bejaos += 2;
+                updateBejaosDisplay();
+                document.getElementById('q3-next').classList.remove('hidden');
+            } else {
+                messageBox.innerHTML = `<span class="emoji">🙌</span><h2>OH NÃO ACHOU A RESPOSTA SECRETA</h2><p>ACABOU DE GANHAR 100 BEJAOS DE VOUCHER PARA SEU NENECO MAS PRECISA FAZER SEU NENECO RIR EM 1 MINUTO. O cronômetro começa em 10 segundos!</p>`;
+            
+                const options = document.querySelectorAll(`#${levelId}-level .option`);
+                options.forEach(option => {
+                    option.disabled = true;
+                });
+                const navButtons = document.querySelectorAll(`#${levelId}-level .nav-button`);
+                navButtons.forEach(button => {
+                    button.disabled = true;
+                });
 
-            setTimeout(() => {
-                startTimer(60, messageBox, levelId);
-            }, 10000);
+                setTimeout(() => {
+                    startTimer(60, messageBox, levelId);
+                }, 10000);
+            }
         };
 
         const startTimer = (duration, messageBox, levelId) => {
@@ -1468,7 +1508,9 @@
                             const secretPasswordInput = document.getElementById('secretPasswordInput');
                             if (secretPasswordInput.value.trim().toUpperCase() === 'EUAMOVOXE') {
                                 document.getElementById('q3-next').classList.remove('hidden');
-                                messageBox.innerHTML = `<span class="emoji">🎉</span><h2>SENHA CORRETA!</h2><p>Você é incrível! Avance para o próximo e último nível!</p>`;
+                                bejaos += 100;
+                                updateBejaosDisplay();
+                                messageBox.innerHTML = `<span class="emoji">🎉</span><h2>SENHA CORRETA!</h2><p>Você é incrível! Ganhou 100 beijaos e pode avançar para o próximo nível!</p>`;
                                 messageBox.className = 'message-box success-message';
                             } else {
                                 messageBox.innerHTML = `<span class="emoji">❌</span><h2>SENHA INCORRETA</h2><p>Tente novamente, minha vida!</p>`;
