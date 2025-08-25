@@ -357,7 +357,7 @@
             color: var(--primary-color);
         }
 
-        .shop-item {
+        .shop-item, .inventory-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -366,13 +366,13 @@
             background-color: #f3e5f5;
             border-radius: 8px;
         }
-        .shop-item h4 {
+        .shop-item h4, .inventory-item h4 {
             margin: 0;
             font-size: 1.1em;
             color: var(--primary-color);
         }
 
-        .shop-item .buy-btn {
+        .shop-item .buy-btn, .inventory-item .use-btn {
             background-color: var(--secondary-color);
             color: white;
             padding: 8px 15px;
@@ -383,8 +383,33 @@
             transition: background-color 0.3s;
         }
 
-        .shop-item .buy-btn:hover {
+        .shop-item .buy-btn:hover, .inventory-item .use-btn:hover {
             background-color: #2563eb;
+        }
+        
+        #inventory-list {
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 15px;
+            padding-right: 10px;
+        }
+        
+        #inventory-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        #inventory-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        #inventory-list::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        
+        .empty-inventory-message {
+            color: #666;
+            font-style: italic;
+            margin-top: 10px;
         }
 
         #shop-message, #memory-message, #roulette-message {
@@ -482,6 +507,13 @@
         }
 
         /* Novos Estilos da Roleta Visual */
+        #roulette-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+        }
+
         #roulette-container {
             position: relative;
             width: 300px;
@@ -492,6 +524,29 @@
             display: flex;
             justify-content: center;
             align-items: center;
+        }
+        
+        #roulette-prizes-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            text-align: left;
+        }
+
+        .prize-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            color: var(--primary-color);
+        }
+
+        .prize-color-box {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+            margin-right: 10px;
         }
 
         #roulette-wheel {
@@ -568,9 +623,13 @@
         <div id="roulette-content">
             <span id="roulette-close-btn">&times;</span>
             <h2>Gire a Roleta da Sorte!</h2>
-            <div id="roulette-container">
-                <div id="roulette-wheel"></div>
-                <div id="roulette-pointer"></div>
+            <div id="roulette-info">
+                <div id="roulette-container">
+                    <div id="roulette-wheel"></div>
+                    <div id="roulette-pointer"></div>
+                </div>
+                <ul id="roulette-prizes-list">
+                    </ul>
             </div>
             <div id="roulette-buttons">
                 <button id="freeSpinBtn" class="roulette-btn">Girar Grátis</button>
@@ -583,7 +642,7 @@
     <div id="shop-modal" class="hidden">
         <div id="shop-content">
             <span id="shop-close-btn">&times;</span>
-            <h2>resgata aqui o voucher de beijaos</h2>
+            <h2>Loja de Vouchers</h2>
             
             <div class="shop-section">
                 <h3>Vouchers</h3>
@@ -610,6 +669,13 @@
             </div>
 
             <p id="shop-message"></p>
+
+            <div class="shop-section">
+                <h3>Inventário</h3>
+                <div id="inventory-list">
+                    <p class="empty-inventory-message">Seu inventário está vazio.</p>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -771,7 +837,6 @@
         </div>
         <div class="nav-buttons">
             <button class="nav-button" id="q8-prev">Anterior</button>
-            <button class="nav-button hidden" id="q8-next">Próximo</button>
         </div>
     </div>
 
@@ -830,15 +895,16 @@
         const rouletteWheel = document.getElementById('roulette-wheel');
         const spinResult = document.getElementById('spin-result');
         const memoryCounterDisplay = document.getElementById('memory-counter');
-
+        const inventoryList = document.getElementById('inventory-list');
+        const roulettePrizesList = document.getElementById('roulette-prizes-list');
+        
         let bejaos = parseInt(localStorage.getItem('bejaos')) || 0;
+        let inventory = JSON.parse(localStorage.getItem('inventory')) || [];
         let lastFreeSpinDate = localStorage.getItem('lastFreeSpinDate') || '';
         let spinsBoughtToday = parseInt(localStorage.getItem('spinsBoughtToday')) || 0;
         let lastSpinBuyDate = localStorage.getItem('lastSpinBuyDate') || '';
         let memoryPlaysToday = parseInt(localStorage.getItem('memoryPlaysToday')) || 0;
         let lastMemoryPlayDate = localStorage.getItem('lastMemoryPlayDate') || '';
-        let quizCompleted = JSON.parse(localStorage.getItem('quizCompleted')) || false;
-        let lastQuizCompletionDate = localStorage.getItem('lastQuizCompletionDate') || '';
         
         let heartsInterval;
         let flippedCards = [];
@@ -882,6 +948,42 @@
             localStorage.setItem('bejaos', bejaos);
         };
         
+        const updateInventory = () => {
+            localStorage.setItem('inventory', JSON.stringify(inventory));
+            renderInventory();
+        };
+
+        const renderInventory = () => {
+            inventoryList.innerHTML = '';
+            if (inventory.length === 0) {
+                inventoryList.innerHTML = `<p class="empty-inventory-message">Seu inventário está vazio.</p>`;
+            } else {
+                inventory.forEach((item, index) => {
+                    const itemDiv = document.createElement('div');
+                    itemDiv.classList.add('inventory-item');
+                    itemDiv.innerHTML = `
+                        <h4>${item.name}</h4>
+                        <button class="use-btn" data-index="${index}">Usar</button>
+                    `;
+                    inventoryList.appendChild(itemDiv);
+                });
+
+                document.querySelectorAll('.use-btn').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const index = parseInt(e.target.dataset.index);
+                        const item = inventory[index];
+                        if (item) {
+                            inventory.splice(index, 1);
+                            updateInventory();
+                            shopMessage.textContent = 'HEHEHE VAI RECEBER BEJAOSSSS';
+                            shopMessage.style.color = 'green';
+                            startConfetti(e.target);
+                        }
+                    });
+                });
+            }
+        };
+
         const showLevel = (levelId) => {
             for (const id in levels) {
                 levels[id].classList.add('hidden');
@@ -1105,6 +1207,20 @@
             gradientString = gradientString.slice(0, -1) + ')';
             rouletteWheel.style.background = gradientString;
         };
+        
+        const renderRoulettePrizes = () => {
+            roulettePrizesList.innerHTML = '';
+            roulettePrizes.forEach(prize => {
+                const percentage = ((prize.weight / totalWeight) * 100).toFixed(1);
+                const listItem = document.createElement('li');
+                listItem.classList.add('prize-item');
+                listItem.innerHTML = `
+                    <span class="prize-color-box" style="background-color: ${prize.color};"></span>
+                    ${prize.name} (${percentage}%)
+                `;
+                roulettePrizesList.appendChild(listItem);
+            });
+        };
 
         function getRoulettePrize() {
             let random = Math.random() * totalWeight;
@@ -1196,10 +1312,6 @@
                 localStorage.setItem('memoryPlaysToday', memoryPlaysToday);
                 localStorage.setItem('lastMemoryPlayDate', today);
             }
-            if (lastQuizCompletionDate !== today) {
-                quizCompleted = false;
-                localStorage.setItem('quizCompleted', JSON.stringify(quizCompleted));
-            }
 
             updateBejaosDisplay();
             updateMemoryCounter();
@@ -1224,11 +1336,13 @@
         shopBtn.addEventListener('click', () => {
             shopModal.classList.remove('hidden');
             shopMessage.textContent = '';
+            renderInventory(); // Renderiza o inventário ao abrir a loja
         });
         rouletteBtn.addEventListener('click', () => {
             rouletteModal.classList.remove('hidden');
             spinResult.textContent = '';
             checkRouletteButtons();
+            renderRoulettePrizes();
         });
         memoryBtn.addEventListener('click', () => {
              if (memoryPlaysToday >= 5) {
@@ -1280,7 +1394,7 @@
                 updateBejaosDisplay();
                 startSpinning();
             } else {
-                spinResult.textContent = 'Você não tem beijaos suficientes para comprar um giro.';
+                spinResult.textContent = 'Você não tem bejaos suficientes para comprar um giro.';
             }
         });
         
@@ -1288,11 +1402,15 @@
             button.addEventListener('click', (e) => {
                 const cost = parseInt(e.target.dataset.cost);
                 const itemName = e.target.closest('.shop-item').querySelector('h4').textContent;
+
                 if (bejaos >= cost) {
                     bejaos -= cost;
                     updateBejaosDisplay();
-                    showPurchaseConfirmation(`Você resgatou com sucesso o: ${itemName}! Saldo atual: ${bejaos} beijaos.`);
-                    shopModal.classList.add('hidden');
+                    
+                    inventory.push({ name: itemName });
+                    updateInventory();
+                    
+                    showPurchaseConfirmation(`Você comprou o "${itemName}" por ${cost} beijaos! O item foi adicionado ao seu inventário.`);
                 } else {
                     showPurchaseConfirmation(`Beijaos insuficientes. Você tem apenas ${bejaos} beijaos.`, false);
                 }
@@ -1337,9 +1455,6 @@
                     resetLevel(nextLevelId);
                     showLevel(nextLevelId);
                     if (nextLevelId === 'final') {
-                        quizCompleted = true;
-                        localStorage.setItem('quizCompleted', JSON.stringify(quizCompleted));
-                        localStorage.setItem('lastQuizCompletionDate', new Date().toDateString());
                         document.getElementById('final-title').textContent = "MINHA RAINHA PASSOU!!!!!!";
                         document.getElementById('final-text').textContent = "Você passou por todos os níveis e provou o quanto me ama demais hehehehehe FELIZ 8 MESES PARA NOSSSSSSSS MINHA DEUSA GREGAAAAAAAAAAA EU TE AMO MIL MILHOESSSSSSSSSSSSSSSS";
                     }
@@ -1382,9 +1497,9 @@
         const handleCorrectAnswer = (levelId, messageBox, sourceElement) => {
             messageBox.className = 'message-box success-message';
             const messages = {
-                'q1': `<span class="emoji">🎉</span><h2>PARABENS MINHA RAINHAAAAAAAA</h2><p>você passou e ganhou ${quizCompleted ? '2' : '10'} BEJAOSSSSSS pode pedir quando quiser :))))</p>`,
-                'q2': `<span class="emoji">🎉</span><h2>EBAAAAAAAAAA</h2><p>GANHOU MAIS ${quizCompleted ? '2' : '10'} BEJAOS DO SEU NENECO HEHEHEHEHE PODE USAR QUANDO QUISER MINHA DEUSA GREGA EU TE AMOOOOOOOOO DEMAISSSSSS</p>`,
-                'q3': `<span class="emoji">🎉</span><h2>PARABENS MINHA PRINCESINHAAAAAAAAAAA EHEHHEHEHEHE</h2><p>MAIS UMA QUE ACERTOU HIHIHIIH AMO :) felizzzzz E GANHOU MAIS ${quizCompleted ? '2' : '10'} BEJAOS DE VOUCHER QUE PODE USAR QUANDO QUISERRRRRRRRRR</p>`,
+                'q1': `<span class="emoji">🎉</span><h2>PARABENS MINHA RAINHAAAAAAAA</h2><p>você passou e ganhou 10 BEJAOSSSSSS pode pedir quando quiser :))))</p>`,
+                'q2': `<span class="emoji">🎉</span><h2>EBAAAAAAAAAA</h2><p>GANHOU MAIS 10 BEJAOS DO SEU NENECO HEHEHEHEHE PODE USAR QUANDO QUISER MINHA DEUSA GREGA EU TE AMOOOOOOOOO DEMAISSSSSS</p>`,
+                'q3': `<span class="emoji">🎉</span><h2>PARABENS MINHA PRINCESINHAAAAAAAAAAA EHEHHEHEHEHE</h2><p>MAIS UMA QUE ACERTOU HIHIHIIH AMO :) felizzzzz E GANHOU MAIS 10 BEJAOS DE VOUCHER QUE PODE USAR QUANDO QUISERRRRRRRRRR</p>`,
                 'q4': `<span class="emoji">🎉</span><h2>HEHEHEHE</h2><p>MINHA PRINCESINHA ME CONHECE TAO BEM HIHIHI EU AMO VOXEEEEEEEE</p>`,
                 'q5': `<span class="emoji">🎉</span><h2>EBAAAAAAAAAA</h2><p>ACERTOUUUUUUUUUUUU HEHEHEHEHEHHEHEHEH</p>`,
                 'q6': `<span class="emoji">🎉</span><h2>EU AMO VOXE</h2><p>foi voxe xim 🙄🙄🙄mas nao quer dizer que voxe ama mais naum xiu :( NOS AMA IGUAL HEHE</p>`,
@@ -1399,9 +1514,8 @@
                 option.disabled = true;
             });
 
-            // Add points based on if quiz is completed
             if (levelId !== 'q8') {
-                 bejaos += quizCompleted ? 2 : 10;
+                 bejaos += 10;
             }
             updateBejaosDisplay();
 
@@ -1442,29 +1556,20 @@
             const nextButton = document.getElementById(`${levelId}-next`);
             nextButton.classList.add('hidden');
             messageBox.className = 'message-box secret-message';
+            messageBox.innerHTML = `<span class="emoji">🙌</span><h2>OH NÃO ACHOU A RESPOSTA SECRETA</h2><p>ACABOU DE GANHAR 100 BEJAOS DE VOUCHER PARA SEU NENECO MAS PRECISA FAZER SEU NENECO RIR EM 1 MINUTO. O cronômetro começa em 10 segundos!</p>`;
             
-            const secretBejaos = quizCompleted ? 2 : 100;
-            if (quizCompleted) {
-                messageBox.innerHTML = `<span class="emoji">🙌</span><h2>OH NÃO! A RESPOSTA SECRETA AGORA VALE APENAS 2 BEIJAOS</h2><p>Você já completou o quiz, então a recompensa é menor. Você ganhou 2 Beijaos!</p>`;
-                bejaos += 2;
-                updateBejaosDisplay();
-                document.getElementById('q3-next').classList.remove('hidden');
-            } else {
-                messageBox.innerHTML = `<span class="emoji">🙌</span><h2>OH NÃO ACHOU A RESPOSTA SECRETA</h2><p>ACABOU DE GANHAR 100 BEJAOS DE VOUCHER PARA SEU NENECO MAS PRECISA FAZER SEU NENECO RIR EM 1 MINUTO. O cronômetro começa em 10 segundos!</p>`;
-            
-                const options = document.querySelectorAll(`#${levelId}-level .option`);
-                options.forEach(option => {
-                    option.disabled = true;
-                });
-                const navButtons = document.querySelectorAll(`#${levelId}-level .nav-button`);
-                navButtons.forEach(button => {
-                    button.disabled = true;
-                });
+            const options = document.querySelectorAll(`#${levelId}-level .option`);
+            options.forEach(option => {
+                option.disabled = true;
+            });
+            const navButtons = document.querySelectorAll(`#${levelId}-level .nav-button`);
+            navButtons.forEach(button => {
+                button.disabled = true;
+            });
 
-                setTimeout(() => {
-                    startTimer(60, messageBox, levelId);
-                }, 10000);
-            }
+            setTimeout(() => {
+                startTimer(60, messageBox, levelId);
+            }, 10000);
         };
 
         const startTimer = (duration, messageBox, levelId) => {
