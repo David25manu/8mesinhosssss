@@ -1,0 +1,1484 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PARA A MINHA DEUSA GREGA</title>
+    
+    <style>
+        /* Estilos CSS */
+        :root {
+            --primary-color: #5d3680;
+            --secondary-color: #3b82f6;
+            --accent-color: #a5d6a7;
+            --background-start: #fce4ec;
+            --background-end: #e1bee7;
+            --text-color: #4a148c;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow: hidden;
+            position: relative;
+        }
+
+        #quiz-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--background-start), var(--background-end));
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+            z-index: -1;
+        }
+        
+        #quiz-background.visible {
+            opacity: 1;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+        
+        .level-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .level-box {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        h1 {
+            color: var(--primary-color);
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            color: var(--text-color);
+        }
+
+        input[type="password"] {
+            width: calc(100% - 40px);
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+            text-align: center;
+            outline: none;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .nav-button {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+        
+        .nav-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        button.main-button {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.1s;
+        }
+
+        button.main-button:hover {
+            background-color: #2563eb;
+            transform: translateY(-2px);
+        }
+
+        #passwordMessage {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 30px;
+        }
+        
+        .flex-options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        
+        .flex-options .option {
+            flex: 1;
+            background-color: #f06292;
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: background-color 0.3s, transform 0.1s;
+            cursor: pointer;
+        }
+
+        .option {
+            background-color: #f06292;
+            color: white;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: background-color 0.3s, transform 0.1s;
+            cursor: pointer;
+        }
+
+        .option:hover {
+            background-color: #d81b60;
+            transform: scale(1.02);
+        }
+
+        .message-box {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+
+        .success-message {
+            background-color: var(--accent-color);
+            color: #2e7d32;
+        }
+
+        .error-message {
+            background-color: #ffcdd2;
+            color: #c62828;
+        }
+
+        .secret-message {
+            background-color: #e1bee7;
+            color: #4a148c;
+        }
+
+        .emoji {
+            font-size: 3em;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* Confetti e Corações */
+        .confetti-container, .hearts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .confetti {
+            position: absolute;
+            background-color: var(--secondary-color);
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            opacity: 0;
+            animation: fall 3s ease-out forwards;
+        }
+
+        /* Nova animação de explosão para os confetes */
+        @keyframes explode-confetti {
+            0% {
+                transform: scale(0) translate(0, 0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1) translate(var(--end-x), var(--end-y));
+                opacity: 0;
+            }
+        }
+
+        .heart {
+            position: absolute;
+            font-size: 1.2em;
+            opacity: 0;
+            animation: fallHeart 4s linear forwards;
+            pointer-events: none;
+        }
+        
+        @keyframes fall {
+            0% { transform: translateY(-10vh) rotateZ(0deg); opacity: 1; }
+            100% { transform: translateY(110vh) rotateZ(720deg); opacity: 0; }
+        }
+
+        @keyframes fallHeart {
+            0% { transform: translateY(-10vh); opacity: 1; }
+            100% { transform: translateY(110vh) rotateZ(360deg); opacity: 0; }
+        }
+
+        /* Loja, Contador e Botões */
+        #top-ui {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 20;
+        }
+
+        #bejaos-counter {
+            background-color: #fff;
+            padding: 10px 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        #shopBtn, #memoryBtn, #rouletteBtn {
+            background-color: #fff;
+            color: #3b82f6;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        #shopBtn:hover, #memoryBtn:hover, #rouletteBtn:hover {
+            transform: scale(1.05);
+        }
+        #shopBtn:disabled, #memoryBtn:disabled, #rouletteBtn:disabled {
+            background-color: #e0e0e0;
+            cursor: not-allowed;
+        }
+        
+        #top-ui-buttons {
+            display: flex;
+            gap: 15px;
+        }
+
+        #shop-modal, #memory-modal, #roulette-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 30;
+        }
+
+        #shop-content, #memory-content, #roulette-content {
+            background-color: #fff;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+            width: 90%;
+            max-width: 600px;
+            position: relative;
+            text-align: center;
+        }
+
+        #shop-content h2, #memory-content h2, #roulette-content h2 {
+            margin-top: 0;
+            font-size: 1.8em;
+            color: var(--primary-color);
+            margin-bottom: 25px;
+        }
+        
+        #shop-close-btn, #memory-close-btn, #roulette-close-btn {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.8em;
+            cursor: pointer;
+            color: #aaa;
+        }
+        
+        .shop-section {
+            margin-bottom: 25px;
+        }
+        
+        .shop-section h3 {
+            margin: 0 0 15px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid var(--primary-color);
+            color: var(--primary-color);
+        }
+
+        .shop-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: #f3e5f5;
+            border-radius: 8px;
+        }
+        .shop-item h4 {
+            margin: 0;
+            font-size: 1.1em;
+            color: var(--primary-color);
+        }
+
+        .shop-item .buy-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        .shop-item .buy-btn:hover {
+            background-color: #2563eb;
+        }
+
+        #shop-message, #memory-message, #roulette-message {
+            margin-top: 15px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+        
+        /* Estilos do Jogo da Memória */
+        #memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            perspective: 1000px;
+        }
+
+        .memory-card {
+            width: 100%;
+            height: 100px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.5s;
+            cursor: pointer;
+        }
+
+        .memory-card.flip {
+            transform: rotateY(180deg);
+        }
+        
+        .card-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2.5em;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .card-back {
+            background-color: #ff9800; /* Laranja */
+            color: white;
+            transform: rotateY(180deg);
+        }
+        
+        .card-front {
+            background-color: #ffc107; /* Amarelo */
+        }
+        
+        #memory-timer {
+            font-size: 1.5em;
+            margin-bottom: 15px;
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+
+        /* Estilos da Roleta */
+        #roulette-message {
+            margin-top: 20px;
+            font-size: 1.2em;
+        }
+
+        #roulette-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 25px;
+        }
+
+        .roulette-btn {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .roulette-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        #spin-result {
+            margin-top: 30px;
+            font-size: 2em; /* Tamanho do texto grande */
+            font-weight: bold;
+            color: var(--primary-color);
+            min-height: 40px;
+        }
+
+        /* Novos Estilos da Roleta Visual */
+        #roulette-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 20px auto;
+            border-radius: 50%;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #roulette-wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            transition: transform 5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            position: relative;
+        }
+
+        #roulette-pointer {
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 25px solid var(--primary-color);
+            z-index: 10;
+        }
+
+        /* Estilos para a mensagem de confirmação de compra */
+        .purchase-confirmation-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        .purchase-confirmation-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            animation: fadeInScale 0.5s ease-out;
+        }
+        @keyframes fadeInScale {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+    </style>
+</head>
+<body>
+    
+    <div id="quiz-background"></div>
+    <div class="hearts-container" id="hearts-container"></div>
+    
+    <div id="top-ui">
+        <div id="bejaos-counter">Beijaos: 0</div>
+        <div id="top-ui-buttons">
+            <button id="rouletteBtn" disabled>Roleta da Sorte</button>
+            <button id="shopBtn" disabled>
+                <span style="color: var(--primary-color);">L</span>
+                <span style="color: var(--secondary-color);">o</span>
+                <span style="color: var(--primary-color);">j</span>
+                <span style="color: var(--secondary-color);">a</span>
+            </button>
+            <button id="memoryBtn" disabled>
+                Ganhe Pontos extra aqui
+            </button>
+        </div>
+    </div>
+    
+    <div id="roulette-modal" class="hidden">
+        <div id="roulette-content">
+            <span id="roulette-close-btn">&times;</span>
+            <h2>Gire a Roleta da Sorte!</h2>
+            <div id="roulette-container">
+                <div id="roulette-wheel"></div>
+                <div id="roulette-pointer"></div>
+            </div>
+            <div id="roulette-buttons">
+                <button id="freeSpinBtn" class="roulette-btn">Girar Grátis</button>
+                <button id="buySpinBtn" class="roulette-btn">Comprar Giro (200)</button>
+            </div>
+            <p id="spin-result"></p>
+        </div>
+    </div>
+
+    <div id="shop-modal" class="hidden">
+        <div id="shop-content">
+            <span id="shop-close-btn">&times;</span>
+            <h2>resgata aqui o voucher de beijaos</h2>
+            
+            <div class="shop-section">
+                <h3>Vouchers</h3>
+                <div class="shop-item">
+                    <h4>Voucher de 10 Beijaos</h4>
+                    <button class="buy-btn" data-cost="10">Custo: 10</button>
+                </div>
+            </div>
+
+            <div class="shop-section">
+                <h3>Promoções</h3>
+                <div class="shop-item">
+                    <h4>Voucher de 100 Beijaos</h4>
+                    <button class="buy-btn" data-cost="50">Custo: 50</button>
+                </div>
+                <div class="shop-item">
+                    <h4>Voucher de 50 Beijaos</h4>
+                    <button class="buy-btn" data-cost="25">Custo: 25</button>
+                </div>
+                <div class="shop-item">
+                    <h4>Voucher de 25 Beijaos</h4>
+                    <button class="buy-btn" data-cost="20">Custo: 20</button>
+                </div>
+            </div>
+
+            <p id="shop-message"></p>
+        </div>
+    </div>
+
+    <div id="memory-modal" class="hidden">
+        <div id="memory-content">
+            <span id="memory-close-btn">&times;</span>
+            <h2>Jogo da Memória</h2>
+            <p id="memory-timer">Tempo: 60s</p>
+            <div id="memory-grid"></div>
+            <p id="memory-message"></p>
+        </div>
+    </div>
+
+    <div class="level-container" id="password-level">
+        <div class="level-box">
+            <h1>Digite a Senha Secreta</h1>
+            <p></p>
+            <input type="password" id="passwordInput">
+            <button class="main-button" id="passwordBtn">Entrar</button>
+            <p id="passwordMessage"></p>
+        </div>
+    </div>
+
+    <div class="level-container hidden" id="q1-level">
+        <div class="level-box">
+            <h2>NOSSO DIA MINHA PRINCESINHA</h2>
+            <p class="question-text">1. Qual nosso dia especial?</p>
+            <div class="options">
+                <button class="option" data-answer="A">A) 24/12/2024</button>
+                <button class="option" data-answer="B">B) 25/11/2024</button>
+                <button class="option" data-answer="C">C) 25/12/2024</button>
+                <button class="option" data-answer="D">D) 24/11/2024</button>
+            </div>
+            <div id="q1-message" class="message-box hidden"></div>
+        </div>
+        <div class="nav-buttons">
+            <button class="nav-button" id="q1-prev" disabled>Anterior</button>
+            <button class="nav-button hidden" id="q1-next">Próximo</button>
+        </div>
+    </div>
+
+    <div class="level-container hidden" id="q2-level">
+        <div class="level-box">
+            <h2>ONDE NOS SE CONHECEU MINHA LINDONA??</h2>
+            <p class="question-text">2. EM QUE JOGO CONHECEMOS HIHI</p>
+            <div class="options">
+                <button class="option" data-answer="A">A) Driving empire</button>
+                <button class="option" data-answer="B">B) Wild Horse Island</button>
+                <button class="option" data-answer="C">C) Mic up</button>
+                <button class="option" data-answer="D">D) Dress to Impress</button>
+            </div>
+            <div id="q2-message" class="message-box hidden"></div>
+        </div>
+        <div class="nav-buttons">
+            <button class="nav-button" id="q2-prev">Anterior</button>
+            <button class="nav-button hidden" id="q2-next">Próximo</button>
+        </div>
+    </div>
+
+    <div class="level-container hidden" id="q3-level">
+        <div class="level-box">
+            <h2>HIHIHIHIIH QUANTO SERA??</h2>
+            <p class="question-text">3. Quanto seu neneco ama minha deusa gregaaaaa</p>
+            <div class="options">
+                <button class="option" data-answer="A">A) INFINITOS</button>
+                <button class="option" data-answer="B">B) MAIS QUE INFINITOS</button>
+                <button class="option" data-answer="C">C) MUITAOOOOO</button>
+                <button class="option" data-answer="D">D) NAZISMO!</button>
+            </div>
+            <div id="q3-message" class="message-box hidden"></div>
+        </div>
+        <div class="nav-buttons">
+            <button class="nav-button" id="q3-prev">Anterior</button>
+            <button class="nav-button hidden" id="q3-next">Próximo</button>
+        </div>
+    </div>
+
+    <div class="level-container hidden" id="q4-level">
+        <div class="level-box">
+            <h2>Qual anime favorito do seu neneco????</h2>
+            <p class="question-text">4. Adivinhe e ganhe a recompensa HEHEHEHEH</p>
+            <div class="options">
+                <button class="option" data-answer="A">A) Made in Abyss</button>
+                <button class="option" data-answer="B">B) One piece</button>
+                <button class="option" data-answer="C">C) Bleach</button>
+                <button class="option" data-answer="D">D) HxH</button>
+            </div>
+            <div id="q4-message" class="message-box hidden"></div>
+        </div>
+        <div class="nav-buttons">
+            <button class="nav-button" id="q4-prev">Anterior</button>
+            <button class="nav-button hidden" id="q4-next">Próximo</button>
+        </div>
+    </div>
+
+    <div class="level-container hidden" id="q5-level">
+        <div class="level-box">
+            <h2>SEU NENECO TE AMA MIL MILHOES INFINITOS MAXIMOS SUPER DUPER INFINITO???</h2>
+            <p class="question-text">5. HEIN???</p>
+            <div class="options">
+                <button class="option" data-answer="A" style="background-color: #2e7d32;">Verdadeiro</button>
+                <button class="option" data-answer="B" style="background-color: #c62828;">Falso</button>
+            </div>
+            <div id="q5-message" class="message-box hidden"></div>
+        </div>
+        <div class="nav-buttons">
+            <button class="nav-button" id="q5-prev">Anterior</button>
+            <button class="nav-button hidden" id="q5-next">Próximo</button>
+        </div>
+    </div>
+
+    <div class="level-container hidden" id="q6-level">
+        <div class="level-box">
+            <h2>O PRIMEIRO EU TE AMOOOO</h2>
+            <p class="question-text">6. QUEM FALOU O PRIMEIRO EU TE AMOOOOOOOOOOOOO</p>
+            <div class="flex-options">
+                <button class="option" data-answer="A" style="color: var(--primary-color); background-color: #fff; border: 2px solid var(--primary-color);">NENECO</button>
+                <p style="font-weight: bold; font-size: 1.2em;"><span style="color: var(--secondary-color);">O</span><span style="color: var(--primary-color);">U</span></p>
+                <button class="option" data-answer="B" style="color: var(--secondary-color); background-color: #fff; border: 2px solid var(--secondary-color);">NENECA</button>
+            </div>
+            <div id="q6-message" class="message-box hidden"></div>
+        </div>
+        <div class="nav-buttons">
+            <button class="nav-button" id="q6-prev">Anterior</button>
+            <button class="nav-button hidden" id="q6-next">Próximo</button>
+        </div>
+    </div>
+
+    <div class="level-container hidden" id="q7-level">
+        <div class="level-box">
+            <h2>A PRIMEIRA MUSICA QUE O NENECO TE DEDICOU</h2>
+            <p class="question-text">7. Qual foi nossa primeira musicaaaa</p>
+            <div class="options">
+                <button class="option" data-answer="A">Esta danada</button>
+                <button class="option" data-answer="B">Mi Bello Angel</button>
+                <button class="option" data-answer="C">Lisboa</button>
+                <button class="option" data-answer="D">Portugal</button>
+            </div>
+            <div id="q7-message" class="message-box hidden"></div>
+        </div>
+        <div class="nav-buttons">
+            <button class="nav-button" id="q7-prev">Anterior</button>
+            <button class="nav-button hidden" id="q7-next">Próximo</button>
+        </div>
+    </div>
+
+    <div class="level-container hidden" id="q8-level">
+        <div class="level-box">
+            <h2>NOSSO PRIMEIRO ENCONTRO HEHEHE</h2>
+            <p class="question-text">8. Onde vai ser nosso primeiro encontrooooo</p>
+            <div class="options">
+                <button class="option" data-answer="A">Shopping mcdonalds</button>
+                <button class="option" data-answer="B">Passear no parque e ir jantar romantico</button>
+                <button class="option" data-answer="C">Jantar romantico e praia</button>
+                <button class="option" data-answer="D">Brinquedos de trampolim e jantar depois</button>
+            </div>
+            <div id="q8-message" class="message-box hidden"></div>
+        </div>
+        <div class="nav-buttons">
+            <button class="nav-button" id="q8-prev">Anterior</button>
+            <button class="nav-button hidden" id="q8-next">Próximo</button>
+        </div>
+    </div>
+
+    <div class="level-container hidden" id="final-level">
+        <div class="level-box">
+            <h2 id="final-title"></h2>
+            <p id="final-text"></p>
+        </div>
+        <div class="nav-buttons">
+            <button class="nav-button" id="final-prev">Anterior</button>
+        </div>
+    </div>
+    
+    <script>
+        // Lógica JavaScript
+        // ##############################################
+        // VARIÁVEIS E FUNÇÕES DO JOGO (DEFINIDAS AQUI)
+        // ##############################################
+        const levels = {
+            'password': document.getElementById('password-level'),
+            'q1': document.getElementById('q1-level'),
+            'q2': document.getElementById('q2-level'),
+            'q3': document.getElementById('q3-level'),
+            'q4': document.getElementById('q4-level'),
+            'q5': document.getElementById('q5-level'),
+            'q6': document.getElementById('q6-level'),
+            'q7': document.getElementById('q7-level'),
+            'q8': document.getElementById('q8-level'),
+            'final': document.getElementById('final-level')
+        };
+        
+        const passwordInput = document.getElementById('passwordInput');
+        const passwordBtn = document.getElementById('passwordBtn');
+        const passwordMessage = document.getElementById('passwordMessage');
+        const quizBackground = document.getElementById('quiz-background');
+        const body = document.body;
+        const heartsContainer = document.getElementById('hearts-container');
+
+        const bejaosCounter = document.getElementById('bejaos-counter');
+        const shopBtn = document.getElementById('shopBtn');
+        const memoryBtn = document.getElementById('memoryBtn');
+        const rouletteBtn = document.getElementById('rouletteBtn');
+        const shopModal = document.getElementById('shop-modal');
+        const memoryModal = document.getElementById('memory-modal');
+        const rouletteModal = document.getElementById('roulette-modal');
+        const shopCloseBtn = document.getElementById('shop-close-btn');
+        const memoryCloseBtn = document.getElementById('memory-close-btn');
+        const rouletteCloseBtn = document.getElementById('roulette-close-btn');
+        const shopMessage = document.getElementById('shop-message');
+        const memoryMessage = document.getElementById('memory-message');
+        const memoryTimerDisplay = document.getElementById('memory-timer');
+        const memoryGrid = document.getElementById('memory-grid');
+        const buyButtons = document.querySelectorAll('.buy-btn');
+        const freeSpinBtn = document.getElementById('freeSpinBtn');
+        const buySpinBtn = document.getElementById('buySpinBtn');
+        const rouletteWheel = document.getElementById('roulette-wheel');
+        const spinResult = document.getElementById('spin-result');
+
+        let bejaos = parseInt(localStorage.getItem('bejaos')) || 0;
+        let lastFreeSpinDate = localStorage.getItem('lastFreeSpinDate') || '';
+        let spinsBoughtToday = parseInt(localStorage.getItem('spinsBoughtToday')) || 0;
+        let lastSpinBuyDate = localStorage.getItem('lastSpinBuyDate') || '';
+        
+        let heartsInterval;
+        let flippedCards = [];
+        let lockBoard = false;
+        let matchedPairs = 0;
+        let timer;
+        let timerInterval;
+
+        const correctAnswers = {
+            'q1': 'C',
+            'q2': 'C',
+            'q3': 'B',
+            'q4': 'B',
+            'q5': 'A',
+            'q6': 'B',
+            'q7': 'B',
+        };
+
+        const roulettePrizes = [
+            { name: "100 Beijaos", weight: 20, color: '#FF5733' },
+            { name: "50 Beijaos", weight: 20, color: '#FFBD33' },
+            { name: "Pedir qualquer coisa pro neneco", weight: 5, color: '#33FF57' },
+            { name: "Neneco fazer tudo que pedir por 1 hora", weight: 2, color: '#5733FF' },
+            { name: "Seu neneco falar fofo o dia todo", weight: 20, color: '#33FFF9' },
+            { name: "Seu neneco cantar para voxe oq quiser", weight: 15, color: '#FF33A8' },
+            { name: "Seu neneco jogar o que a nenem quiser", weight: 15, color: '#A833FF' },
+            { name: "300 Beijaos", weight: 3, color: '#FF3333' },
+        ];
+
+        let totalWeight = roulettePrizes.reduce((sum, prize) => sum + prize.weight, 0);
+        let accumulatedAngle = 0;
+        roulettePrizes.forEach(prize => {
+            const angle = (prize.weight / totalWeight) * 360;
+            prize.startAngle = accumulatedAngle;
+            prize.endAngle = accumulatedAngle + angle;
+            accumulatedAngle += angle;
+        });
+        
+        const updateBejaosDisplay = () => {
+            bejaosCounter.textContent = `Beijaos: ${bejaos}`;
+            localStorage.setItem('bejaos', bejaos);
+        };
+        
+        const showLevel = (levelId) => {
+            for (const id in levels) {
+                levels[id].classList.add('hidden');
+            }
+            levels[levelId].classList.remove('hidden');
+            
+            if (levelId !== 'password') {
+                quizBackground.classList.add('visible');
+                body.style.backgroundColor = 'transparent';
+            } else {
+                quizBackground.classList.remove('visible');
+                body.style.backgroundColor = '#1a1a1a';
+            }
+        };
+
+        const startFallingHearts = () => {
+            const colors = ['💜', '💙'];
+            const createHeart = () => {
+                const heart = document.createElement('span');
+                heart.className = 'heart';
+                heart.innerHTML = colors[Math.floor(Math.random() * colors.length)];
+                heart.style.left = `${Math.random() * 100}%`;
+                heart.style.animationDelay = `${Math.random() * 2}s`;
+                heartsContainer.appendChild(heart);
+                setTimeout(() => heart.remove(), 8000);
+            };
+            clearInterval(heartsInterval);
+            heartsInterval = setInterval(createHeart, 300);
+        };
+
+        const showPurchaseConfirmation = (message, isSuccess = true) => {
+            const modal = document.createElement('div');
+            modal.classList.add('purchase-confirmation-modal');
+            
+            const content = document.createElement('div');
+            content.classList.add('purchase-confirmation-content');
+            
+            const title = document.createElement('h2');
+            title.textContent = isSuccess ? 'Compra Realizada!' : 'Compra Não Aprovada';
+            
+            const msg = document.createElement('p');
+            msg.textContent = message;
+            
+            const closeBtn = document.createElement('button');
+            closeBtn.textContent = 'Ok';
+            closeBtn.classList.add('main-button');
+            closeBtn.style.marginTop = '20px';
+            closeBtn.addEventListener('click', () => {
+                modal.remove();
+            });
+
+            content.appendChild(title);
+            content.appendChild(msg);
+            content.appendChild(closeBtn);
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+
+            if (isSuccess) {
+                startConfetti(content);
+            }
+        };
+        
+        const startConfetti = (sourceElement) => {
+            const rect = sourceElement.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            const confettiContainer = document.createElement('div');
+            confettiContainer.className = 'confetti-container';
+            document.body.appendChild(confettiContainer);
+            
+            const colors = ['#f06292', '#ff80ab', '#a5d6a7', '#ffcdd2', '#3b82f6'];
+            for (let i = 0; i < 50; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                
+                const angle = Math.random() * 360;
+                const distance = Math.random() * 200 + 50;
+                const endX = distance * Math.cos(angle * Math.PI / 180);
+                const endY = distance * Math.sin(angle * Math.PI / 180);
+
+                confetti.style.left = `${centerX}px`;
+                confetti.style.top = `${centerY}px`;
+                confetti.style.setProperty('--end-x', `${endX}px`);
+                confetti.style.setProperty('--end-y', `${endY}px`);
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.animation = `explode-confetti 1.5s forwards ease-out`;
+                confetti.style.animationDelay = `${Math.random() * 0.5}s`;
+
+                confettiContainer.appendChild(confetti);
+            }
+            setTimeout(() => confettiContainer.remove(), 2000);
+        };
+
+        // Lógica do Jogo da Memória
+        const emojis = ['🍎', '🍌', '🍒', '🍇', '🍋', '🍉', '🍓', '🍍'];
+        const allEmojis = [...emojis, ...emojis];
+        
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function createBoard() {
+            shuffle(allEmojis);
+            memoryGrid.innerHTML = '';
+            allEmojis.forEach(emoji => {
+                const card = document.createElement('div');
+                card.classList.add('memory-card');
+                card.dataset.emoji = emoji;
+
+                card.innerHTML = `
+                    <div class="card-face card-front"></div>
+                    <div class="card-face card-back">${emoji}</div>
+                `;
+                card.addEventListener('click', flipCard);
+                memoryGrid.appendChild(card);
+            });
+        }
+
+        function flipCard() {
+            if (lockBoard) return;
+            if (this === flippedCards[0]) return;
+            
+            this.classList.add('flip');
+            
+            if (flippedCards.length === 0) {
+                flippedCards[0] = this;
+                return;
+            }
+
+            flippedCards[1] = this;
+            checkForMatch();
+        }
+
+        function checkForMatch() {
+            const isMatch = flippedCards[0].dataset.emoji === flippedCards[1].dataset.emoji;
+            isMatch ? disableCards() : unflipCards();
+        }
+
+        function disableCards() {
+            flippedCards[0].removeEventListener('click', flipCard);
+            flippedCards[1].removeEventListener('click', flipCard);
+            matchedPairs++;
+            resetBoard();
+            if (matchedPairs === emojis.length) {
+                winMemoryGame();
+            }
+        }
+        
+        function unflipCards() {
+            lockBoard = true;
+            setTimeout(() => {
+                flippedCards[0].classList.remove('flip');
+                flippedCards[1].classList.remove('flip');
+                resetBoard();
+            }, 1000);
+        }
+
+        function resetBoard() {
+            [flippedCards, lockBoard] = [[], false];
+        }
+        
+        function startMemoryTimer() {
+            timer = 60;
+            memoryTimerDisplay.textContent = `Tempo: ${timer}s`;
+            timerInterval = setInterval(() => {
+                timer--;
+                memoryTimerDisplay.textContent = `Tempo: ${timer}s`;
+                if (timer <= 0) {
+                    clearInterval(timerInterval);
+                    loseMemoryGame();
+                }
+            }, 1000);
+        }
+        
+        function winMemoryGame() {
+            clearInterval(timerInterval);
+            bejaos += 50;
+            updateBejaosDisplay();
+            memoryMessage.textContent = 'Parabéns! Você ganhou 50 beijaos!';
+            memoryMessage.style.color = 'green';
+            startConfetti(memoryGrid);
+            setTimeout(() => {
+                memoryModal.classList.add('hidden');
+                memoryMessage.textContent = '';
+            }, 3000);
+        }
+        
+        function loseMemoryGame() {
+            memoryMessage.textContent = 'Que pena! O tempo acabou. Tente novamente!';
+            memoryMessage.style.color = 'red';
+            const cards = document.querySelectorAll('.memory-card');
+            cards.forEach(card => card.removeEventListener('click', flipCard));
+            setTimeout(() => {
+                memoryModal.classList.add('hidden');
+                memoryMessage.textContent = '';
+            }, 3000);
+        }
+
+        // Lógica da Roleta da Sorte
+        const createRouletteWheel = () => {
+            let gradientString = 'conic-gradient(';
+            let currentAngle = 0;
+            
+            roulettePrizes.forEach(prize => {
+                const angle = (prize.weight / totalWeight) * 360;
+                gradientString += `${prize.color} ${currentAngle}deg ${currentAngle + angle}deg,`;
+                currentAngle += angle;
+            });
+            
+            gradientString = gradientString.slice(0, -1) + ')';
+            rouletteWheel.style.background = gradientString;
+        };
+
+        function getRoulettePrize() {
+            let random = Math.random() * totalWeight;
+            let currentWeight = 0;
+            for (const prize of roulettePrizes) {
+                currentWeight += prize.weight;
+                if (random <= currentWeight) {
+                    return prize;
+                }
+            }
+        }
+
+        function startSpinning() {
+            const prize = getRoulettePrize();
+            const startAngleForPrize = prize.startAngle;
+            const endAngleForPrize = prize.endAngle;
+            
+            const randomAngleInSegment = Math.random() * (endAngleForPrize - startAngleForPrize) + startAngleForPrize;
+            
+            const finalAngle = 360 * 5 + (360 - randomAngleInSegment);
+            
+            rouletteWheel.style.transition = 'transform 5s cubic-bezier(0.2, 0.8, 0.2, 1)';
+            rouletteWheel.style.transform = `rotate(${finalAngle}deg)`;
+
+            freeSpinBtn.disabled = true;
+            buySpinBtn.disabled = true;
+            spinResult.textContent = 'A roleta está girando...';
+
+            setTimeout(() => {
+                let bonusBejaos = 0;
+                if (prize.name.includes("300")) {
+                    bonusBejaos = 300;
+                } else if (prize.name.includes("100")) {
+                    bonusBejaos = 100;
+                } else if (prize.name.includes("50")) {
+                    bonusBejaos = 50;
+                }
+                
+                if (bonusBejaos > 0) {
+                    bejaos += bonusBejaos;
+                    updateBejaosDisplay();
+                    spinResult.textContent = `Parabéns! Você ganhou: ${bonusBejaos} beijaos!`;
+                } else {
+                    spinResult.textContent = `Parabéns! Você ganhou: ${prize.name}!`;
+                }
+                
+                startConfetti(rouletteModal);
+                checkRouletteButtons();
+
+            }, 5500); // 5.5s para a animação
+        }
+        
+        function checkRouletteButtons() {
+            const today = new Date().toDateString();
+            
+            if (lastFreeSpinDate === today) {
+                freeSpinBtn.disabled = true;
+                freeSpinBtn.textContent = 'Giro Grátis (Usado)';
+            } else {
+                freeSpinBtn.disabled = false;
+                freeSpinBtn.textContent = 'Girar Grátis';
+            }
+            
+            if (spinsBoughtToday >= 3) {
+                buySpinBtn.disabled = true;
+                buySpinBtn.textContent = 'Comprar Giro (Limite Diário)';
+                if (spinResult.textContent === 'A roleta está girando...') {
+                    spinResult.textContent = 'Você já comprou o limite de 3 giros por hoje.';
+                }
+            } else {
+                 buySpinBtn.disabled = false;
+                 buySpinBtn.textContent = `Comprar Giro (200) (${spinsBoughtToday}/3)`;
+            }
+        }
+
+
+        // ##############################################
+        // EVENT LISTENERS DO JOGO
+        // ##############################################
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date().toDateString();
+            if (lastSpinBuyDate !== today) {
+                spinsBoughtToday = 0;
+                localStorage.setItem('spinsBoughtToday', spinsBoughtToday);
+                localStorage.setItem('lastSpinBuyDate', today);
+            }
+
+            updateBejaosDisplay();
+            startFallingHearts();
+            showLevel('password');
+            createRouletteWheel();
+        });
+        
+        passwordBtn.addEventListener('click', () => {
+            if (passwordInput.value.trim() === '251224') {
+                shopBtn.disabled = false;
+                memoryBtn.disabled = false;
+                rouletteBtn.disabled = false;
+                showLevel('q1');
+                passwordInput.value = '';
+            } else {
+                passwordMessage.textContent = 'Senha incorreta. Tente novamente.';
+                passwordMessage.style.color = 'red';
+            }
+        });
+        
+        shopBtn.addEventListener('click', () => {
+            shopModal.classList.remove('hidden');
+            shopMessage.textContent = '';
+        });
+        rouletteBtn.addEventListener('click', () => {
+            rouletteModal.classList.remove('hidden');
+            spinResult.textContent = '';
+            checkRouletteButtons();
+        });
+        memoryBtn.addEventListener('click', () => {
+            memoryModal.classList.remove('hidden');
+            memoryMessage.textContent = '';
+            matchedPairs = 0;
+            resetBoard();
+            createBoard();
+            startMemoryTimer();
+        });
+
+        shopCloseBtn.addEventListener('click', () => {
+            shopModal.classList.add('hidden');
+        });
+        memoryCloseBtn.addEventListener('click', () => {
+            clearInterval(timerInterval);
+            memoryModal.classList.add('hidden');
+            memoryMessage.textContent = '';
+        });
+        rouletteCloseBtn.addEventListener('click', () => {
+            rouletteModal.classList.add('hidden');
+        });
+
+        freeSpinBtn.addEventListener('click', () => {
+            const today = new Date().toDateString();
+            if (lastFreeSpinDate !== today) {
+                localStorage.setItem('lastFreeSpinDate', today);
+                startSpinning();
+            } else {
+                spinResult.textContent = 'Você já usou seu giro grátis de hoje!';
+            }
+        });
+
+        buySpinBtn.addEventListener('click', () => {
+            if (spinsBoughtToday >= 3) {
+                spinResult.textContent = 'Você já comprou o limite de 3 giros por hoje.';
+                buySpinBtn.disabled = true;
+                return;
+            }
+
+            if (bejaos >= 200) {
+                bejaos -= 200;
+                spinsBoughtToday++;
+                localStorage.setItem('spinsBoughtToday', spinsBoughtToday);
+                updateBejaosDisplay();
+                startSpinning();
+            } else {
+                spinResult.textContent = 'Você não tem beijaos suficientes para comprar um giro.';
+            }
+        });
+        
+        buyButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const cost = parseInt(e.target.dataset.cost);
+                const itemName = e.target.closest('.shop-item').querySelector('h4').textContent;
+                if (bejaos >= cost) {
+                    bejaos -= cost;
+                    updateBejaosDisplay();
+                    showPurchaseConfirmation(`Você resgatou com sucesso o: ${itemName}! Saldo atual: ${bejaos} beijaos.`);
+                    shopModal.classList.add('hidden');
+                } else {
+                    showPurchaseConfirmation(`Beijaos insuficientes. Você tem apenas ${bejaos} beijaos.`, false);
+                }
+            });
+        });
+
+        document.body.addEventListener('click', (e) => {
+            if (e.target.classList.contains('option')) {
+                const userAnswer = e.target.dataset.answer;
+                const levelBox = e.target.closest('.level-container');
+                const levelId = levelBox.id.split('-')[0];
+                const messageBox = document.getElementById(`${levelId}-message`);
+                
+                const nextButton = document.getElementById(`${levelId}-next`);
+
+                messageBox.classList.remove('hidden');
+
+                const isCorrect = levelId === 'q8' || userAnswer === correctAnswers[levelId];
+                const isSecret = levelId === 'q3' && userAnswer === 'D';
+                
+                if (isSecret) {
+                    handleSecretAnswer(messageBox, levelId);
+                } else if (isCorrect) {
+                    handleCorrectAnswer(levelId, messageBox, e.target);
+                } else {
+                    handleWrongAnswer(levelId, userAnswer, messageBox);
+                }
+            } else if (e.target.classList.contains('nav-button')) {
+                const buttonId = e.target.id;
+                const [levelId, direction] = buttonId.split('-');
+                const levelOrder = ['q1', 'q2', 'q3', 'q4', 'q5', 'q6', 'q7', 'q8', 'final'];
+                const currentIndex = levelOrder.indexOf(levelId);
+                
+                let nextLevelId;
+                if (direction === 'next' && currentIndex < levelOrder.length - 1) {
+                    nextLevelId = levelOrder[currentIndex + 1];
+                } else if (direction === 'prev' && currentIndex > 0) {
+                    nextLevelId = levelOrder[currentIndex - 1];
+                }
+
+                if (nextLevelId) {
+                    resetLevel(nextLevelId);
+                    showLevel(nextLevelId);
+                    if (nextLevelId === 'final') {
+                        document.getElementById('final-title').textContent = "MINHA RAINHA PASSOU!!!!!!";
+                        document.getElementById('final-text').textContent = "Você passou por todos os níveis e provou o quanto me ama demais hehehehehe FELIZ 8 MESES PARA NOSSSSSSSS MINHA DEUSA GREGAAAAAAAAAAA EU TE AMO MIL MILHOESSSSSSSSSSSSSSSS";
+                    }
+                }
+            } else if (e.target.classList.contains('beijaos-btn')) {
+                const messageBox = e.target.closest('.message-box');
+                const levelId = messageBox.id.replace('-message', '');
+                resetLevel(levelId);
+            }
+        });
+
+        const resetLevel = (levelId) => {
+            const messageBox = document.getElementById(`${levelId}-message`);
+            const nextButton = document.getElementById(`${levelId}-next`);
+            if (messageBox) {
+                messageBox.classList.add('hidden');
+                messageBox.innerHTML = '';
+            }
+            if (nextButton) {
+                nextButton.classList.add('hidden');
+            }
+
+            const options = document.querySelectorAll(`#${levelId}-level .option`);
+            options.forEach(option => {
+                option.classList.remove('hidden');
+                option.disabled = false;
+            });
+            
+            const navButtons = document.querySelectorAll(`#${levelId}-level .nav-button`);
+            navButtons.forEach(button => {
+                button.disabled = false;
+            });
+            
+            // Nível 1 tem um botão anterior desabilitado por padrão
+            if (levelId === 'q1') {
+                 document.getElementById('q1-prev').disabled = true;
+            }
+        };
+
+        const handleCorrectAnswer = (levelId, messageBox, sourceElement) => {
+            messageBox.className = 'message-box success-message';
+            const messages = {
+                'q1': `<span class="emoji">🎉</span><h2>PARABENS MINHA RAINHAAAA HEHEHEHEHE</h2><p>voxe passou e ganhou 10 BEJAOSSSSSS pode pedir quando quiser :))))</p>`,
+                'q2': `<span class="emoji">🎉</span><h2>EBAAAAAAAAAA</h2><p>GANHOU MAIS 10 BEJAOS DO SEU NENECO HEHEHEHEHE PODE USAR QUANDO QUISER MINHA DEUSA GREGA EU TE AMOOOOOOOOO DEMAISSSSSS</p>`,
+                'q3': `<span class="emoji">🎉</span><h2>PARABENS MINHA PRINCESINHAAAAAAAAAAA EHEHHEHEHEHE</h2><p>MAIS UMA QUE ACERTOU HIHIHIIH AMO :) felizzzzz E GANHOU MAIS 10 BEJAOS DE VOUCHER QUE PODE USAR QUANDO QUISERRRRRRRRRR</p>`,
+                'q4': `<span class="emoji">🎉</span><h2>HEHEHEHE</h2><p>MINHA PRINCESINHA ME CONHECE TAO BEM HIHIHI EU AMO VOXEEEEEEEE</p>`,
+                'q5': `<span class="emoji">🎉</span><h2>EBAAAAAAAAAA</h2><p>ACERTOUUUUUUUUUUUU HEHEHEHEHEHHEHEHEH</p>`,
+                'q6': `<span class="emoji">🎉</span><h2>EU AMO VOXE</h2><p>foi voxe xim 🙄🙄🙄mas nao quer dizer que voxe ama mais naum xiu :( NOS AMA IGUAL HEHE</p>`,
+                'q7': `<span class="emoji">🎉</span><h2>SIMMMMMMMMMMM</h2><p>FOI ESSA MESMO VOXE LEMBRAAAAAAAA HEHEHEHEHEHE EU TE AMOOOOOOOOO</p>`,
+                'q8': `<span class="emoji">🎉</span><h2>HEHEHEHE</h2><p>taboum :)) agora sei onde vamos hihihiihih EU TE AMOOOOOOOOOOOOOOO</p>`
+            };
+            messageBox.innerHTML = messages[levelId];
+            document.getElementById(`${levelId}-next`).classList.remove('hidden');
+            
+            const options = document.querySelectorAll(`#${levelId}-level .option`);
+            options.forEach(option => {
+                option.disabled = true;
+            });
+
+            // Add 10 beijaos for correct answers
+            if (levelId !== 'q8') {
+                 bejaos += 10;
+            }
+            updateBejaosDisplay();
+
+            startConfetti(sourceElement);
+        };
+
+        const handleWrongAnswer = (levelId, userAnswer, messageBox) => {
+            const nextButton = document.getElementById(`${levelId}-next`);
+            nextButton.classList.add('hidden');
+            
+            messageBox.className = 'message-box error-message';
+            
+            const messageMap = {
+                'q1': `<span class="emoji">❌</span><h2>Poxa :(</h2><p>voxe esqueceu? :((</p><p>Para mais uma tentativa tem que dar 10 bejaos no seu neneco agora mesmo antes q ele fique triste :(</p><button class="beijaos-btn">ja dei 10 bejaos hehe</button>`,
+                'q4': `<span class="emoji">❌</span><h2>Poxa :(</h2><p>minha rainha perfeita nao me conhece bem?? :CC to tristi preciso de bejaos :(</p><button class="beijaos-btn">DA 10 BEJAOS NO NENECO PARA CONTINUAR</button>`,
+                'q5': `<h2>❌❌❌❌❌❌❌❌❌</h2><p>nossa :(( duvida do meu amor puque :(( mauvada</p><p>❌❌❌❌❌❌❌❌❌</p><button class="beijaos-btn">DA 10 BEJAOS NO NENECO PARA CONTINUAR</button>`,
+                'q6': `<span class="emoji">❌</span><h2>Poxa :(</h2><p>nao fui eu :(( eu queria ser eu :(( poxa DA 10 BEJAOS PRA TENTA DENOVOOOO</p><button class="beijaos-btn">DA 10 BEJAOS NO NENECO PARA CONTINUAR</button>`,
+                'q7': `<span class="emoji">❌</span><h2>Poxa :(</h2><p>:( ERROU? poxa :(( mauvada :( tem q dar 10 bejaos :((</p><button class="beijaos-btn">DA 10 BEJAOS NO NENECO PARA CONTINUAR</button>`,
+            };
+            
+            if (messageMap[levelId]) {
+                messageBox.innerHTML = messageMap[levelId];
+            } else {
+                messageBox.innerHTML = `<span class="emoji">❌</span><h2>Poxa :(</h2><p>Resposta errada! Dá 10 beijaos no seu neneco para continuar.</p><button class="beijaos-btn">DA 10 BEJAOS NO NENECO PARA CONTINUAR</button>`;
+            }
+            
+            const options = document.querySelectorAll(`#${levelId}-level .option`);
+            options.forEach(option => {
+                option.disabled = true;
+            });
+            const navButtons = document.querySelectorAll(`#${levelId}-level .nav-button`);
+            navButtons.forEach(button => {
+                button.disabled = true;
+            });
+        };
+
+        const handleSecretAnswer = (messageBox, levelId) => {
+            const nextButton = document.getElementById(`${levelId}-next`);
+            nextButton.classList.add('hidden');
+            messageBox.className = 'message-box secret-message';
+            messageBox.innerHTML = `<span class="emoji">🙌</span><h2>OH NÃO ACHOU A RESPOSTA SECRETA</h2><p>ACABOU DE GANHAR 100 BEJAOS DE VOUCHER PARA SEU NENECO MAS PRECISA FAZER SEU NENECO RIR EM 1 MINUTO. O cronômetro começa em 10 segundos!</p>`;
+            
+            const options = document.querySelectorAll(`#${levelId}-level .option`);
+            options.forEach(option => {
+                option.disabled = true;
+            });
+            const navButtons = document.querySelectorAll(`#${levelId}-level .nav-button`);
+            navButtons.forEach(button => {
+                button.disabled = true;
+            });
+
+            setTimeout(() => {
+                startTimer(60, messageBox, levelId);
+            }, 10000);
+        };
+
+        const startTimer = (duration, messageBox, levelId) => {
+            const timerContainer = document.createElement('div');
+            timerContainer.id = 'timer-display';
+            timerContainer.style.marginTop = '20px';
+            timerContainer.style.fontSize = '1.5em';
+            messageBox.appendChild(timerContainer);
+
+            let timer = duration, minutes, seconds;
+            const countdown = setInterval(() => {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+                timerContainer.textContent = `Tempo restante: ${minutes}:${seconds}`;
+                
+                if (--timer < 0) {
+                    clearInterval(countdown);
+                    timerContainer.textContent = "Tempo esgotado!";
+
+                    setTimeout(() => {
+                         // Re-habilita os botões de navegação e desabilita as opções após o timer
+                        const options = document.querySelectorAll(`#${levelId}-level .option`);
+                        options.forEach(option => {
+                            option.disabled = true;
+                        });
+                        const navButtons = document.querySelectorAll(`#${levelId}-level .nav-button`);
+                        navButtons.forEach(button => {
+                            button.disabled = false;
+                        });
+
+                        messageBox.innerHTML = `
+                            <h2>Parabéns!</h2>
+                            <p>Conseguiu fazer o seu neneco rir? Perfeito! Agora, para continuar, digite a senha secreta que ele te deu!</p>
+                            <input type="text" id="secretPasswordInput" placeholder="Digite a senha aqui...">
+                            <button id="secretPasswordBtn" class="main-button">Verificar</button>
+                        `;
+
+                        document.getElementById('secretPasswordBtn').addEventListener('click', () => {
+                            const secretPasswordInput = document.getElementById('secretPasswordInput');
+                            if (secretPasswordInput.value.trim().toUpperCase() === 'EUAMOVOXE') {
+                                document.getElementById('q3-next').classList.remove('hidden');
+                                messageBox.innerHTML = `<span class="emoji">🎉</span><h2>SENHA CORRETA!</h2><p>Você é incrível! Avance para o próximo e último nível!</p>`;
+                                messageBox.className = 'message-box success-message';
+                            } else {
+                                messageBox.innerHTML = `<span class="emoji">❌</span><h2>SENHA INCORRETA</h2><p>Tente novamente, minha vida!</p>`;
+                                messageBox.className = 'message-box error-message';
+                            }
+                        });
+                    }, 2000);
+                }
+            }, 1000);
+        };
+    </script>
+</body>
+</html>
